@@ -2,6 +2,13 @@
 class Tweet {
     text;
     time;
+    // Minimal sentiment lexicon for bonus feature
+    static positiveWords = new Set([
+        'good', 'great', 'awesome', 'amazing', 'nice', 'fantastic', 'love', 'loving', 'fun', 'fast', 'strong', 'proud', 'happy', 'enjoy', 'enjoyed', 'enjoying', 'yay', 'win', 'wins', 'winning', 'best', 'better', 'improve', 'improved', 'personal', 'record', 'pr', 'epic', 'perfect', 'beautiful', 'solid', 'success', 'stronger', 'crushed', 'crushing', 'nailed', 'beast'
+    ]);
+    static negativeWords = new Set([
+        'bad', 'tired', 'terrible', 'awful', 'slow', 'pain', 'painful', 'hurt', 'hurts', 'sore', 'injury', 'injured', 'rain', 'rainy', 'cold', 'hot', 'worst', 'rough', 'sad', 'sucks', 'suck', 'fail', 'failed', 'bonk', 'bonked', 'wind', 'windy', 'sick'
+    ]);
     constructor(tweet_text, tweet_time) {
         this.text = tweet_text;
         this.time = new Date(tweet_time);
@@ -99,7 +106,35 @@ class Tweet {
         // Create a clickable link for any URLs in the tweet
         const tweetHtml = this.linkify(this.text);
         const activity = this.activityType;
-        return `<tr><th scope="row">${rowNumber}</th><td>${activity}</td><td>${tweetHtml}</td></tr>`;
+        const sentiment = this.sentimentLabel;
+        const badgeClass = sentiment === 'positive' ? 'bg-success' : (sentiment === 'negative' ? 'bg-danger' : 'bg-secondary');
+        const sentimentBadge = `<span class="badge ${badgeClass}" style="margin-left: 0.5rem;">${sentiment}</span>`;
+        return `<tr><th scope="row">${rowNumber}</th><td>${activity}</td><td>${tweetHtml} ${sentimentBadge}</td></tr>`;
+    }
+    // Bonus: simple sentiment mined from user-written text
+    get sentimentScore() {
+        const text = this.writtenText.toLowerCase();
+        if (!text)
+            return 0;
+        const tokens = text.match(/[a-z]+/g) || [];
+        let pos = 0, neg = 0;
+        for (const t of tokens) {
+            if (Tweet.positiveWords.has(t))
+                pos++;
+            if (Tweet.negativeWords.has(t))
+                neg++;
+        }
+        if (pos === 0 && neg === 0)
+            return 0;
+        return (pos - neg) / Math.max(1, pos + neg);
+    }
+    get sentimentLabel() {
+        const s = this.sentimentScore;
+        if (s > 0.15)
+            return 'positive';
+        if (s < -0.15)
+            return 'negative';
+        return 'neutral';
     }
     extractUserWrittenText(raw) {
         // Remove URLs and hashtag

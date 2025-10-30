@@ -23,4 +23,10 @@ None.
 
 5. Is there anything special we need to know in order to run your code?
 
-None.
+A bonus feature has been added: basic sentiment mining on user-written text and display in the search table.
+I extended the Tweet class to compute a simple sentiment from writtenText using small positive/negative word lists and expose sentimentScore and sentimentLabel.
+I updated getHTMLTableRow to append a Bootstrap badge indicating sentiment (positive/neutral/negative) next to the tweet content.
+You should now see a colored badge next to each tweet in the descriptions page table indicating its sentiment.
+Green badge: positive
+Gray badge: neutral
+Red badge: negative
